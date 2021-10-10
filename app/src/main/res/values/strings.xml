@@ -1,0 +1,7 @@
+<resources>
+    <string name="app_name">SuperTest</string>
+    <string name="next">Next</string>
+    <string name="cost">Cost</string>
+    <string name="congratulations_result">Congratulations! Your result:</string>
+    <string name="back">Back</string>
+</resources>
