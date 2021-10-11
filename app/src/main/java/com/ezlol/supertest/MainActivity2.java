@@ -57,7 +57,7 @@ public class MainActivity2 extends AppCompatActivity {
         setContentView(R.layout.activity_main2);
 
         SQLiteDatabase db = dbHelper.getWritableDatabase();
-        dbHelper.dropTable(db, "questions");
+      //  dbHelper.dropTable(db, "questions");
         Cursor s = db.rawQuery("SELECT * FROM sqlite_master WHERE name='questions' and type='table';", null);
         int cnt = s.getCount();
         if(cnt == 0){
