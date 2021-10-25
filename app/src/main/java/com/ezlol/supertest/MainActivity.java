@@ -5,7 +5,6 @@ import androidx.appcompat.app.AppCompatActivity;
 import android.content.Intent;
 import android.os.AsyncTask;
 import android.os.Bundle;
-import android.os.Parcelable;
 import android.text.Editable;
 import android.util.Log;
 import android.view.View;
@@ -22,11 +21,9 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Random;
 
 public class MainActivity extends AppCompatActivity implements View.OnClickListener {
     private static JSONObject test;
@@ -45,7 +42,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
         contentLayout = findViewById(R.id.contentLayout);
         loadingLayout = findViewById(R.id.loadingLayout);
-        button = findViewById(R.id.button);
+        button = findViewById(R.id.startTest);
         reloadBtn = findViewById(R.id.reloadBtn);
         randomTestBtn = findViewById(R.id.randomTestBtn);
         progressBar = findViewById(R.id.progressBar);
@@ -65,7 +62,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     @Override
     public void onClick(View view){
         switch(view.getId()) {
-            case R.id.button: {
+            case R.id.startTest: {
                 JSONObject test = tests.get(testSelect.getSelectedItemPosition());
                 EditText username_edittext = findViewById(R.id.editTextTextPersonName);
                 Editable username = username_edittext.getText();

@@ -23,7 +23,7 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginTop="84dp"
-            android:labelFor="@id/button"
+            android:labelFor="@id/startTest"
             android:text="Hi, what's your name, man?"
             android:textSize="25sp" />
 
@@ -60,7 +60,7 @@
                 android:text="Random test" />
 
             <Button
-                android:id="@+id/button"
+                android:id="@+id/startTest"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginLeft="5dp"
