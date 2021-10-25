@@ -2,6 +2,15 @@
     <string name="app_name">SuperTest</string>
     <string name="next">Next</string>
     <string name="cost">Cost</string>
-    <string name="congratulations_result">Congratulations! Your result:</string>
+    <string name="congratulations_result">Congratulations!</string>
     <string name="back">Back</string>
+    <string name="sc_hi">Hi</string>
+    <string name="ur_points">Your points</string>
+    <string name="avg_complet">Average percentage of completion</string>
+    <string name="connection_to_the_server">Connection to the server...</string>
+    <string name="server_connection_error">Server connection error</string>
+    <string name="try_again">Try again</string>
+    <string name="reload">Reload</string>
+    <string name="start">start</string>
+    <string name="finish">Finish</string>
 </resources>

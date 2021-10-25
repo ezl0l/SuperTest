@@ -9,6 +9,12 @@ import org.json.JSONObject;
 import java.io.IOException;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
 
 public class AppAPI {
     private static final String serverURL = "http://85.12.218.165:8080/SuperTest/api/";
@@ -39,8 +45,8 @@ public class AppAPI {
 
     public static JSONObject getRandomTest(int numberOfQuestions){
         Response r = Requests.get(serverURL + "getTests.php?random=1&number_of_questions=" + numberOfQuestions);
-        Log.e("EZLOL", r.toString());
-        return r.json();
+        if(r != null) return r.json();
+        return null;
     }
 
     public static JSONObject getRandomTest(){
@@ -59,5 +65,60 @@ public class AppAPI {
             }
         }catch (JSONException ignored){}
         return false;
+    }
+
+    public static Map<Integer, Boolean> checkAnswers(List questionIDS, List answers){
+        String questionString = join(questionIDS, ";");
+        String answerString = join(answers, ";");
+        Log.e("strings", questionIDS + " " + answers);
+        Response r = Requests.get(serverURL + "checkAnswers.php?question_ids=" + questionString + "&answers=" + answerString);
+        JSONObject json = r.json();
+        Map<Integer, Boolean> matches = new HashMap<>();
+        try {
+            if (JSON.isSuccess(json) && json.has("response")) {
+                JSONObject response = json.getJSONObject("response");
+
+                Iterator<String> keys = response.keys();
+                String key;
+                JSONObject match;
+                while(keys.hasNext()){
+                    key = keys.next();
+                    match = response.getJSONObject(key);
+                    if(JSON.isSuccess(match) && match.has("response")){
+                        matches.put(Integer.parseInt(key), match.getJSONObject("response").getBoolean("match"));
+                    }else
+                        matches.put(Integer.parseInt(key), false);
+                }
+            }
+        }catch (JSONException ignored){}
+        return matches;
+    }
+
+    public static Double getGeneralStats(List questionIDS){
+        String questionString = join(questionIDS, ";");
+        Log.e("questionIDS", questionString);
+        Response r = Requests.get(serverURL + "getStats.php?question_ids=" + questionString);
+        JSONObject json = r.json();
+        try {
+            if (JSON.isSuccess(json) && json.has("response")) {
+                JSONObject response = json.getJSONObject("response");
+                if(response.has("avg")){
+                    return response.getDouble("avg");
+                }
+            }
+        }catch (JSONException ignored){}
+        return null;
+    }
+
+    private static String join(List elements, String delimiter){
+        String s = "";
+        for(int i = 0; i < elements.size(); i++){
+            s += elements.get(i) + delimiter;
+        }
+        return s.substring(0, s.length() - delimiter.length());
+    }
+
+    private static String join(List elements){
+        return join(elements, ",");
     }
 }

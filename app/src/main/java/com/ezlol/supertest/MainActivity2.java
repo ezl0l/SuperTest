@@ -1,20 +1,16 @@
 package com.ezlol.supertest;
-
-import static java.lang.String.valueOf;
-
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.constraintlayout.widget.ConstraintLayout;
 
 import android.content.Intent;
 import android.os.AsyncTask;
 import android.os.Bundle;
-import android.util.AttributeSet;
 import android.util.Log;
 import android.view.View;
-import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.CheckBox;
 import android.widget.EditText;
+import android.widget.ProgressBar;
 import android.widget.RadioButton;
 import android.widget.RadioGroup;
 import android.widget.TextView;
@@ -25,49 +21,54 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.util.ArrayList;
-import java.util.List;
+import java.util.HashMap;
+import java.util.Map;
 
 
 public class MainActivity2 extends AppCompatActivity implements View.OnClickListener {
     int questionCounter = 0;
-    private int points = 0;
+    private String username;
     private JSONObject test;
     private JSONArray questions;
-    private final List<String> answers = new ArrayList<String>();
+    private final Map<Integer, String> answers = new HashMap<>();
 
     TextView welcomeText, questionName, questionContent;
-    Button answerBtn;
+    Button answerBtn, backBtn;
 
     ConstraintLayout answerLayout;
     CheckBox checkBox1, checkBox2, checkBox3;
     EditText answerInput;
     RadioGroup radioGroup;
     RadioButton radioButton1, radioButton2, radioButton3, radioButton4;
+    ProgressBar answersCheckBar;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main2);
 
-        welcomeText = (TextView) findViewById(R.id.welcomeText);
-        questionName = (TextView) findViewById(R.id.questionName);
-        questionContent = (TextView) findViewById(R.id.questionContent);
-        answerBtn = (Button) findViewById(R.id.answerBtn);
+        welcomeText = findViewById(R.id.welcomeText);
+        questionName = findViewById(R.id.questionName);
+        questionContent = findViewById(R.id.questionContent);
+        answerBtn = findViewById(R.id.answerBtn);
+        backBtn = findViewById(R.id.backBtn);
 
-        answerLayout = (ConstraintLayout) findViewById(R.id.answerLayout);
-        checkBox1 = (CheckBox) findViewById(R.id.checkBox1);
-        checkBox2 = (CheckBox) findViewById(R.id.checkBox2);
-        checkBox3 = (CheckBox) findViewById(R.id.checkBox3);
-        answerInput = (EditText) findViewById(R.id.answerInput);
-        radioGroup = (RadioGroup) findViewById(R.id.radioGroup);
-        radioButton1 = (RadioButton) findViewById(R.id.radioButton1);
-        radioButton2 = (RadioButton) findViewById(R.id.radioButton2);
-        radioButton3 = (RadioButton) findViewById(R.id.radioButton3);
-        radioButton4 = (RadioButton) findViewById(R.id.radioButton4);
+        answerLayout = findViewById(R.id.answerLayout);
+        checkBox1 = findViewById(R.id.checkBox1);
+        checkBox2 = findViewById(R.id.checkBox2);
+        checkBox3 = findViewById(R.id.checkBox3);
+        answerInput = findViewById(R.id.answerInput);
+        radioGroup = findViewById(R.id.radioGroup);
+        radioButton1 = findViewById(R.id.radioButton1);
+        radioButton2 = findViewById(R.id.radioButton2);
+        radioButton3 = findViewById(R.id.radioButton3);
+        radioButton4 = findViewById(R.id.radioButton4);
+        answersCheckBar = findViewById(R.id.answersCheckBar);
 
         Intent intent = getIntent();
 
         String json = intent.getStringExtra("test");
+        this.username = intent.getStringExtra("username");
         try {
             this.test = new JSONObject(json);
             this.questions = test.getJSONArray("questions");
@@ -77,14 +78,23 @@ public class MainActivity2 extends AppCompatActivity implements View.OnClickList
             return;
         }
         answerBtn.setOnClickListener(this);
+        backBtn.setOnClickListener(this);
 
         nextQuestion();
     }
 
     @Override
     public void onClick(View view) {
-        if(view.getId() == answerBtn.getId()) {
-            nextQuestion();
+        switch(view.getId()) {
+            case R.id.answerBtn: {
+                nextQuestion();
+                break;
+            }
+            case R.id.backBtn:{
+                questionCounter -= 2;
+                nextQuestion();
+                break;
+            }
         }
     }
 
@@ -93,6 +103,8 @@ public class MainActivity2 extends AppCompatActivity implements View.OnClickList
             answerLayout.getChildAt(i).setVisibility(View.INVISIBLE);
         }
         if(questionCounter > 0) {
+            welcomeText.setVisibility(View.GONE);
+            backBtn.setVisibility(View.VISIBLE);
             try {
                 Log.e("ANSWERS", "START WRITE ANSWER!");
                 JSONObject lastQuestion = questions.getJSONObject(questionCounter - 1);
@@ -122,10 +134,14 @@ public class MainActivity2 extends AppCompatActivity implements View.OnClickList
                     }
                 }
                 Log.e("ANSWER", answer);
-                answers.add(questionCounter - 1, answer);
+                answers.put(lastQuestion.getInt("id"), answer);
             } catch (Exception e) {
                 Log.e("FATAL ERROR!", e.toString());
             }
+            if(questionCounter + 1 == questions.length()){
+                answerBtn.setText(R.string.finish);
+            }
+
             if (questionCounter == questions.length()) {
                 // END
                 Log.e("EZLOL", "END!");
@@ -134,6 +150,9 @@ public class MainActivity2 extends AppCompatActivity implements View.OnClickList
                 endTest();
                 return;
             }
+        }else{
+            backBtn.setVisibility(View.GONE);
+            welcomeText.setText(String.format("%s, %s!", getString(R.string.sc_hi), username));
         }
         try {
             JSONObject currentQuestion = questions.getJSONObject(questionCounter);
@@ -171,32 +190,54 @@ public class MainActivity2 extends AppCompatActivity implements View.OnClickList
     }
 
     private void endTest(){
-        JSONObject currentQuestion, currentQuestionContent;
-        String answer;
-        final int points = 0;
-        try {
-            for (int i = 0; i < questions.length(); i++) {
-                answer = answers.get(i);
-                currentQuestion = questions.getJSONObject(i);
+        for(int i = 0; i < answerLayout.getChildCount(); i++){
+            answerLayout.getChildAt(i).setVisibility(View.INVISIBLE);
+        }
+        backBtn.setVisibility(View.GONE);
+        answerBtn.setVisibility(View.GONE);
+        answersCheckBar.setVisibility(View.VISIBLE);
+        ArrayList<Integer> questionsIDS = new ArrayList<>(this.answers.keySet());
+        ArrayList<String> answersL = new ArrayList<>(this.answers.values());
+        Log.e("QUESTIONSIDS", questionsIDS.toString());
+        Log.e("ANSWERS!", answersL.toString());
 
-                JSONObject finalCurrentQuestion = currentQuestion;
-                String finalAnswer = answer;
-                class Task extends AsyncTask<Void, Void, Boolean> {
-                    @Override
-                    protected Boolean doInBackground(Void... voids) {
-                        try {
-                            return AppAPI.checkAnswer(finalCurrentQuestion.getInt("id"), finalAnswer);
-                        } catch (JSONException e) {
-                            return false;
-                        }
-                    }
-
-                    @Override
-                    protected void onPostExecute(Boolean b) {
-                        super.onPostExecute(b);
-                    }
-                }
+        class Task extends AsyncTask<ArrayList, Void, ArrayList<Object>> {
+            @Override
+            protected ArrayList<Object> doInBackground(ArrayList ...lists) { //
+                Log.e("LIST 0", lists[0].toString());
+                Log.e("LIST 1", lists[1].toString());
+                ArrayList<Object> l = new ArrayList<>();
+                l.add(AppAPI.checkAnswers(lists[0], lists[1]));
+                l.add(AppAPI.getGeneralStats(lists[0]));
+                return l;
             }
-        }catch (JSONException ignored){}
+
+            @Override
+            protected void onPostExecute(ArrayList<Object> r) {
+                super.onPostExecute(r);
+                Map<Integer, Boolean> answersResults = (Map<Integer, Boolean>) r.get(0);
+                Double avgResult = (Double) r.get(1);
+                answersCheckBar.setVisibility(View.GONE);
+                Log.e("ANSWERS RES", r.toString());
+                int points = 0;
+                for (Map.Entry<Integer, Boolean> e : answersResults.entrySet()) {
+                    if(e.getValue())
+                        points++;
+                }
+                welcomeText.setText(R.string.congratulations_result);
+                questionName.setText(String.format("%s: %d - %d%%", getResources().getString(R.string.ur_points), points, (points * 100) / answersResults.size()));
+                questionContent.setText(String.format("%s: %d%%", getResources().getString(R.string.avg_complet), (int) (avgResult * 100)));
+                questionContent.setVisibility(View.VISIBLE);
+                welcomeText.setVisibility(View.VISIBLE);
+                questionName.setVisibility(View.VISIBLE);
+            }
+        }
+        Task t = new Task();
+        t.execute(questionsIDS, answersL);
+    }
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
     }
 }
